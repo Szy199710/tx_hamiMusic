@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tx.mapper.SongMapper">
+    <resultMap id="BaseResultMap" type="cn.tx.pojo.Song">
+        <id column="SID" jdbcType="INTEGER" property="sid" />
+        <result column="TID" jdbcType="INTEGER" property="tid" />
+        <result column="SRID" jdbcType="INTEGER" property="srid" />
+        <result column="AID" jdbcType="INTEGER" property="aid" />
+        <result column="SNAME" jdbcType="VARCHAR" property="sname" />
+        <result column="PIC" jdbcType="VARCHAR" property="pic" />
+        <result column="MP3" jdbcType="VARCHAR" property="mp3" />
+        <result column="IS_HOT" jdbcType="INTEGER" property="isHot" />
+        <result column="IS_NEW" jdbcType="INTEGER" property="isNew" />
+        <result column="PTIMES" jdbcType="INTEGER" property="ptimes" />
+        <result column="AUDIT_STATUS" jdbcType="INTEGER" property="auditStatus" />
+        <result column="SHOW_STATUS" jdbcType="INTEGER" property="showStatus" />
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="cn.tx.pojo.Song">
+        <result column="LRC" jdbcType="LONGVARCHAR" property="lrc" />
+    </resultMap>
+
+    <resultMap id="selectByConditionRM" type="cn.tx.pojo.Song" extends="BaseResultMap">
+        <association property="mtype" javaType="cn.tx.pojo.Mtype" resultMap="cn.tx.mapper.MtypeMapper.BaseResultMap"/>
+        <association property="songer" javaType="cn.tx.pojo.Songer" resultMap="cn.tx.mapper.SongerMapper.BaseResultMap"/>
+        <association property="album" javaType="cn.tx.pojo.Album" resultMap="cn.tx.mapper.AlbumMapper.BaseResultMap"/>
+    </resultMap>
+<select id="findAllmtypePage" resultMap="selectByConditionRM">
+    select
+    s.SID,
+    s.TID,
+    s.SRID,
+    s.AID,
+    s.SNAME,
+    s.MP3,
+    s.IS_HOT,
+    s.IS_NEW,
+    s.PTIMES,
+    s.AUDIT_STATUS,
+    s.SHOW_STATUS,
+    m.TNAME,
+    sr.SRNAME,
+    sr.PIC,
+    a.ANAME
+    from song s left join mtype m  on s.tid = m.tid
+    left join songer sr on s.srid = sr.srid
+    left join album  a on s.aid = a.aid
+    <where>
+        <if test="song.sname != null and song.sname != ''">
+            s.SNAME LIKE '%${song.sname}%'
+        </if>
+        <if test="song.srname != null and song.srname != ''">
+            AND sr.SRNAME LIKE '%${song.srname}%'
+        </if>
+        <if test="song.aname != null and song.aname != ''">
+            AND a.ANAME LIKE '%${song.aname}%'
+        </if>
+        <if test="song.tid != null">
+            AND s.TID = #{song.tid}
+        </if>
+        <if test="song.isHot != null" >
+            AND s.IS_HOT = #{song.isHot}
+        </if>
+        <if test="song.isNew != null" >
+            AND s.IS_NEW = #{song.isNew}
+        </if>
+    </where>
+    LIMIT #{starIndex},#{pageSize}
+</select>
+<select id="selectAllCount"  resultType="integer">
+    select COUNT(*) from song s left join mtype m  on s.tid = m.tid
+    left join songer sr on s.srid = sr.srid
+    left join album  a on s.aid = a.aid
+    <where>
+        <if test="song.sname != null and song.sname != ''">
+            s.SNAME LIKE '%${song.sname}%'
+        </if>
+        <if test="song.srname != null and song.srname != ''">
+            AND sr.SRNAME LIKE '%${song.srname}%'
+        </if>
+        <if test="song.aname != null and song.aname != ''">
+             AND a.ANAME LIKE '%${song.aname}%'
+        </if>
+        <if test="song.tid != null">
+            AND s.TID = #{song.tid}
+        </if>
+        <if test="song.isHot != null" >
+            AND s.IS_HOT = #{song.isHot}
+        </if>
+        <if test="song.isNew != null" >
+            AND s.IS_NEW = #{song.isNew}
+        </if>
+    </where>
+</select>
+<insert id="insertsong" parameterType="cn.tx.pojo.Song">
+        INSERT INTO song (TID, SRID, AID, SNAME, PIC, MP3, LRC, IS_HOT, IS_NEW,PTIMES,AUDIT_STATUS,SHOW_STATUS)
+        VALUES (#{song.tid}, #{song.srid}, #{song.aid}, #{song.sname}, #{song.pic}, #{song.mp3}, #{song.lrc}, #{song.isHot}, #{song.isNew},#{song.ptimes},#{song.auditStatus},#{song.showStatus})
+</insert>
+
+
+
+    <!--
+
+    -->
+    <select id="selectSongBySids" parameterType="list" resultMap="selectByConditionRM">
+        select * from song s
+        LEFT JOIN mtype m ON s.TID = m.TID
+        LEFT JOIN songer sr ON s.SRID = sr.SRID
+        LEFT JOIN album a ON s.AID = a.AID
+        <where>
+            s.sid in
+            <if test="list != null">
+                <foreach collection="list" open="(" close=")" separator="," item="sid">
+                    #{sid}
+                </foreach>
+            </if>
+            ORDER BY FIELD (s.SID,
+            <foreach collection="list"  separator="," item="sid">
+                #{sid}
+            </foreach>
+            )
+        </where>
+    </select>
+
+
+    <resultMap id="selectSongBySidRM" type="cn.tx.pojo.Song" extends="ResultMapWithBLOBs">
+        <association property="songer" javaType="cn.tx.pojo.Songer"
+                     resultMap="cn.tx.mapper.SongerMapper.BaseResultMap"></association>
+    </resultMap>
+
+    <select id="selectSongBySid" parameterType="int" resultMap="selectSongBySidRM">
+        select * from song s
+        LEFT JOIN songer sr ON s.SRID = sr.SRID
+        where s.sid = #{sid}
+    </select>
+
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tx.mapper.AlbumMapper">
+    <resultMap id="BaseResultMap" type="cn.tx.pojo.Album">
+        <id column="AID" jdbcType="INTEGER" property="aid" />
+        <result column="ANAME" jdbcType="VARCHAR" property="aname" />
+        <result column="PIC" jdbcType="VARCHAR" property="pic"/>
+        <result column="COMPANY" jdbcType="VARCHAR" property="company" />
+        <result column="PDATE" jdbcType="DATE" property="pdate" />
+        <result column="LANG" jdbcType="VARCHAR" property="lang" />
+    </resultMap>
+  <select id="selectAllCount" resultType="integer">
+      select count(*) from album t
+      <where>
+          <if test="album.aname != null and album.aname != ''">
+              t.ANAME like '%${album.aname}%'
+          </if>
+          <if test="album.company != null and album.company != ''">
+              AND  t.COMPANY like '%${album.company}%'
+          </if>
+          <if test="album.lang != null and album.lang != ''">
+              AND  t.LANG like '%${album.lang}%'
+          </if>
+          <if test="album.pdate != null">
+              AND  t.PDATE > #{album.pdate}
+          </if>
+      </where>
+  </select>
+
+<select id="findAllmtypePage"  resultType="cn.tx.pojo.Album">
+        select * from album t
+    <where>
+        <if test="album.aname != null and album.aname != ''">
+            t.ANAME like '%${album.aname}%'
+        </if>
+        <if test="album.company != null and album.company != ''">
+            AND  t.COMPANY like '%${album.company}%'
+        </if>
+        <if test="album.lang != null and album.lang != ''">
+            AND  t.LANG like '%${album.lang}%'
+        </if>
+        <if test="album.pdate != null">
+            AND  t.PDATE > #{album.pdate}
+        </if>
+    </where>
+        LIMIT #{startIndex},#{pageSize}
+</select>
+    <insert id="insert" parameterType="cn.tx.pojo.Album">
+        insert into album (AID, ANAME, PIC,
+        COMPANY, PDATE, LANG)
+        values (#{album.aid}, #{album.aname}, #{album.pic},
+        #{album.company}, #{album.pdate}, #{album.lang})
+    </insert>
+    <select id="selectByname" parameterType="map" resultType="cn.tx.pojo.Album">
+        select * from album t where t.aname = #{aname};
+    </select>
+
+</mapper>

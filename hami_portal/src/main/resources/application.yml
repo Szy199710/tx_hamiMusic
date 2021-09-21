@@ -1,0 +1,29 @@
+server:
+  port: 8095
+
+  servlet:
+    context-path: /
+  tomcat:
+    max-swallow-size: -1
+spring:
+  datasource:
+    #引入druid数据源
+    url: jdbc:mysql://127.0.0.1:3306/tx_hami?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+    username: root
+    password: root
+
+  mvc:
+    view:
+      prefix: /WEB-INF/page/
+      suffix: .jsp
+#mybatis-plush配置
+mybatis-plus:
+  type-aliases-package: com.jt.pojo
+  mapper-locations: classpath:/mybatis/mappers/*.xml
+  configuration:
+    #映射横岗
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.jt.mapper: debug

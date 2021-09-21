@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tx.mapper.SongerMapper">
+    <resultMap id="BaseResultMap" type="cn.tx.pojo.Songer">
+        <id column="SRID" jdbcType="INTEGER" property="srid" />
+        <result column="TID" jdbcType="INTEGER" property="tid" />
+        <result column="SRNAME" jdbcType="VARCHAR" property="srname" />
+        <result column="AREA" jdbcType="VARCHAR" property="area" />
+        <result column="PIC" jdbcType="VARCHAR" property="pic" />
+        <result column="IS_HOT" jdbcType="INTEGER" property="isHot" />
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="cn.tx.pojo.Songer">
+        <result column="INTRO" jdbcType="LONGVARCHAR" property="intro" />
+    </resultMap>
+
+    <resultMap id="selectByConditionRM" type="cn.tx.pojo.Songer" extends="ResultMapWithBLOBs">
+        <!--指定多对一的关系-->
+        <association property="mtype" javaType="cn.tx.pojo.Mtype" resultMap="cn.tx.mapper.MtypeMapper.BaseResultMap"/>
+    </resultMap>
+
+    <select id="selectAllCount" resultType="integer">
+        select count(*)  from songer s left join mtype m  on s.tid=m.tid
+        <where>
+            <if test="songer.srname!=null and songer.srname!=''">
+                s.srname like '%${songer.srname}%'
+            </if>
+            <if test="songer.area!=null and songer.area!=''">
+                and s.area like '%${songer.area}%'
+            </if>
+            <if test="songer.tid!=null">
+                and s.tid=#{songer.tid}
+            </if>
+        </where>
+  </select>
+
+<select id="findAllmtypePage"  resultType="cn.tx.pojo.Songer">
+    select * from songer s left join mtype m  on s.tid=m.tid
+    <where>
+        <if test="songer.srname!=null and songer.srname!=''">
+            s.srname like '%${songer.srname}%'
+        </if>
+        <if test="songer.area!=null and songer.area!=''">
+            and s.area like '%${songer.area}%'
+        </if>
+        <if test="songer.tid!=null">
+            and s.tid=#{songer.tid}
+        </if>
+    </where>
+    LIMIT #{starIndex},#{pageSize}
+</select>
+
+
+
+<resultMap id="selectSongerSongsByIdRM" type="cn.tx.pojo.Songer" extends="ResultMapWithBLOBs">
+        <association property="mtype" javaType="cn.tx.pojo.Mtype" resultMap="cn.tx.mapper.MtypeMapper.BaseResultMap"></association>
+        <collection property="songs" ofType="cn.tx.pojo.Song" resultMap="cn.tx.mapper.SongMapper.BaseResultMap"></collection>
+</resultMap>
+<select id="selectSongerSongById" parameterType="int" resultMap="selectSongerSongsByIdRM">
+     SELECT
+        s.SRID, s.TID, s.SRNAME, s.AREA,s.pic,s.IS_HOT, s.INTRO, s1.*, m.*
+    FROM
+        songer s
+    LEFT JOIN song s1 ON s.SRID = s1.SRID
+    LEFT JOIN mtype m on s.TID = m.TID
+    WHERE
+
+        s.SRID = #{srid}
+</select>
+</mapper>
