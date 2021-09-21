@@ -34,7 +34,7 @@ public class AlbumController {
         model.addAttribute("page", pageAlbum);
         model.addAttribute("pageNo", pageNo);
         model.addAttribute("album", album);
-
+        System.out.println("sdssd");
         return "album";
     }
     @ResponseBody
